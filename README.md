@@ -192,7 +192,4 @@ v1.1.0 支持自定义动态监控规则。例如，您可以定义什么行为�
 -   **[Bandit](https://github.com/PyCQA/bandit)**: 提供了高质量的 Python 安全检测规则集参考。
 -   **[OSV-Scanner](https://github.com/google/osv-scanner)**: 本项目的依赖漏洞检测使用了 Google OSV 数据库。
 
----
-
-**License**: MIT
-**Author**: Argus-Scanner Team
+ 
