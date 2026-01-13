@@ -1,0 +1,83 @@
+rules:
+  # ============================================================================
+  # 后门与恶意模式 (Backdoor & Malware Patterns)
+  # ============================================================================
+  - id: BACKDOOR-001
+    title: "反弹 Shell (Socket 连接)"
+    severity: CRITICAL
+    category: backdoor
+    description: "检测到向外部 IP 的 Socket 连接，常用于反弹 Shell 建立远程控制。"
+    languages: [python, java, go, c, cpp]
+    patterns:
+      - type: call
+        regex: "connect|socket"
+      - type: string
+        regex: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"
+
+  - id: BACKDOOR-002
+    title: "反弹 Shell (子进程)"
+    severity: CRITICAL
+    category: backdoor
+    description: "检测到带有重定向的 Shell 执行，这是 netcat 或 bash 反弹 Shell 的典型特征。"
+    languages: [python, java, go, c, cpp]
+    patterns:
+      - type: string
+        regex: "nc -e|bash -i >&|/dev/tcp/"
+
+  - id: BACKDOOR-003
+    title: "Base64 编码代码执行"
+    severity: CRITICAL
+    category: backdoor
+    description: "检测到直接执行 Base64 解码后的代码，常用于绕过静态检测或隐藏恶意逻辑。"
+    languages: [python]
+    patterns:
+      - type: call
+        regex: "exec|eval"
+      - type: call
+        regex: "b64decode"
+
+  # ============================================================================
+  # 凭据与隐私信息 (Secrets & Credentials)
+  # ============================================================================
+  - id: SECRETS-001
+    title: "AWS 访问密钥泄露"
+    severity: CRITICAL
+    category: secret
+    description: "代码中包含硬编码的 AWS Access Key ID，存在云账户被非法访问风险。"
+    languages: [all]
+    patterns:
+      - type: string
+        regex: "(?<![A-Z0-9])AKIA[0-9A-Z]{16}(?![A-Z0-9])"
+
+  - id: SECRETS-002
+    title: "Google API 密钥泄露"
+    severity: HIGH
+    category: secret
+    description: "代码中包含硬编码的 Google API Key。"
+    languages: [all]
+    patterns:
+      - type: string
+        regex: "AIza[0-9A-Za-z\\-_]{35}"
+
+  - id: SECRETS-003
+    title: "私钥泄露"
+    severity: CRITICAL
+    category: secret
+    description: "代码中包含硬编码的私钥 (Private Key) 信息，可能导致加密通信被破解或身份冒充。"
+    languages: [all]
+    patterns:
+      - type: string
+        regex: "-----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----"
+
+  # ============================================================================
+  # 可疑行为分析 (Suspicious Behavior)
+  # ============================================================================
+  - id: SUSPICIOUS-001
+    title: "硬编码 IP 地址"
+    severity: MEDIUM
+    category: suspicious
+    description: "代码中包含硬编码的 IP 地址，这可能是一个外连的回调 C2 (命令与控制) 地址。"
+    languages: [all]
+    patterns:
+      - type: string
+        regex: "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b"

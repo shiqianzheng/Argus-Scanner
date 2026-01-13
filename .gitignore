@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Project Specific
+reports/
+reports_*/
+logs/
+*.log
+
+# Test Artifacts & Large Datasets
+Ruoyi-master/
+temp_debug.java
+
+# Development Utility Scripts
+# 仅保留演示指导书中必需的环境自检脚本，其余调试/测试脚本不予追踪
+debug_*.py
+check_*.py
+!check_env.py
+analyze_*.py
+clean_report.py
+json_to_html.py
+malicious_test.py

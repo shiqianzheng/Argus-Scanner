@@ -1,0 +1,167 @@
+# Argus-Scanner 配置文件
+
+# 系统配置
+system:
+  name: "Argus-Scanner"
+  version: "1.0.0"
+  description: "开源软件后门木马和安全漏洞检测系统"
+  log_level: "INFO"
+  output_dir: "./reports"
+  temp_dir: "./temp"
+
+# 支持的编程语言
+languages:
+  - python
+  - java
+  - go
+  - c
+  - cpp
+
+# 静态分析配置
+static_analysis:
+  enabled: true
+  # 模式匹配
+  pattern_matching:
+    enabled: true
+    custom_rules_dir: "./rules/patterns"
+  # 数据流分析
+  dataflow_analysis:
+    enabled: true
+    max_depth: 10
+  # 控制流分析
+  controlflow_analysis:
+    enabled: true
+  # 污点分析
+  taint_analysis:
+    enabled: true
+    taint_sources:
+      - "request"
+      - "input"
+      - "args"
+      - "environ"
+      - "stdin"
+    sensitive_sinks:
+      - "eval"
+      - "exec"
+      - "system"
+      - "popen"
+      - "subprocess"
+      - "sql"
+      - "write"
+  # 依赖检查
+  dependency_check:
+    enabled: true
+    cve_database_url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    osv_database_url: "https://api.osv.dev/v1/query"
+
+# 动态分析配置
+dynamic_analysis:
+  enabled: true
+  sandbox_enabled: true
+  timeout: 60  # 秒
+  # 系统调用监控
+  syscall_monitor:
+    enabled: true
+    dangerous_syscalls:
+      - "execve"
+      - "fork"
+      - "socket"
+      - "connect"
+      - "bind"
+      - "ptrace"
+  # 网络监控
+  network_monitor:
+    enabled: true
+    suspicious_ports:
+      - 4444
+      - 5555
+      - 6666
+      - 31337
+      - 12345
+  # 文件监控
+  file_monitor:
+    enabled: true
+    sensitive_paths:
+      - "/etc/passwd"
+      - "/etc/shadow"
+      - "~/.ssh"
+      - "~/.bashrc"
+      - "/tmp"
+
+# 后门木马检测规则
+backdoor_detection:
+  # 可疑网络行为
+  suspicious_network:
+    - pattern: "reverse.*shell"
+      severity: "critical"
+    - pattern: "bind.*shell"
+      severity: "critical"
+    - pattern: "socket.*connect"
+      severity: "high"
+  # 可疑命令执行
+  suspicious_commands:
+    - pattern: "os\\.system|subprocess|popen"
+      severity: "high"
+    - pattern: "Runtime\\.exec|ProcessBuilder"
+      severity: "high"
+    - pattern: "exec\\.Command"
+      severity: "high"
+  # 代码混淆特征
+  obfuscation_patterns:
+    - pattern: "base64.*decode.*exec"
+      severity: "critical"
+    - pattern: "eval.*chr.*ord"
+      severity: "high"
+    - pattern: "\\\\x[0-9a-f]{2}"
+      severity: "medium"
+
+# 安全漏洞检测规则
+vulnerability_detection:
+  # SQL注入
+  sql_injection:
+    patterns:
+      - "execute.*\\+.*input"
+      - "query.*format.*request"
+      - "SELECT.*%s"
+    severity: "high"
+  # 命令注入
+  command_injection:
+    patterns:
+      - "os\\.system.*input"
+      - "subprocess.*shell.*True"
+      - "popen.*request"
+    severity: "critical"
+  # XSS
+  xss:
+    patterns:
+      - "innerHTML.*input"
+      - "document\\.write.*request"
+    severity: "medium"
+  # 路径遍历
+  path_traversal:
+    patterns:
+      - "open.*\\.\\./"
+      - "file.*request\\.get"
+    severity: "high"
+  # 不安全的反序列化
+  insecure_deserialization:
+    patterns:
+      - "pickle\\.load"
+      - "yaml\\.load.*Loader"
+      - "ObjectInputStream"
+    severity: "high"
+
+# Web服务配置
+web_server:
+  host: "127.0.0.1"
+  port: 5000
+  debug: false
+
+# 报告配置
+report:
+  formats:
+    - "html"
+    - "json"
+    - "pdf"
+  include_code_snippets: true
+  max_snippet_lines: 10

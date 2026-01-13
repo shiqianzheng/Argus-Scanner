@@ -1,0 +1,43 @@
+# Argus-Scanner - 开源软件后门木马和安全漏洞检测系统
+# 依赖包列表
+
+# Web框架
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# 代码分析
+tree-sitter==0.20.4
+tree-sitter-languages==1.10.2
+
+# 容器化支持
+docker>=7.0.0
+
+# 安全扫描
+bandit>=1.7.0
+safety>=2.3.0
+
+# 网络分析
+scapy>=2.5.0
+psutil>=5.9.0
+
+# 系统监控
+watchdog>=3.0.0
+
+# CVE数据库
+requests>=2.31.0
+
+# 报告生成
+jinja2>=3.1.0
+python-docx>=0.8.11
+openpyxl>=3.1.0
+
+# 工具库
+pyyaml>=6.0
+colorama>=0.4.6
+tqdm>=4.65.0
+networkx>=3.1
+pygments>=2.15.0
+
+# 异步支持
+aiohttp>=3.8.0
+aiofiles>=23.1.0
