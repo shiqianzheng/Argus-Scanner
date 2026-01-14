@@ -182,7 +182,45 @@ v1.1.0 支持自定义动态监控规则。例如，您可以定义什么行为�
 
 ## 🤝 贡献与反馈
 
-欢迎提交 Issue 或 Pull Request 来改进 Argus-Scanner！
+感谢你参与 **Argus-Scanner** 的开发！为了保持项目代码质量并确保协作顺畅，请在提交代码前阅读本指南。
+
+### 🛠 开发流程
+
+我们推荐使用 **Fork + Pull Request** 的模式进行协作。
+
+#### 1. 准备工作
+* **Fork 项目**：点击页面右上角的 `Fork` 按钮，将本项目复制到你的个人账号下。
+* **克隆到本地**：建议使用 [GitHub Desktop](https://desktop.github.com/) 将你 Fork 后的仓库克隆到本地。
+* **保持同步**：在开始新功能前，点击 GitHub Desktop 中的 `Fetch origin` 并确保你的 `main` 分支与原仓库同步。
+
+#### 2. 创建分支 (Branch)
+* 始终在新的分支上工作，不要直接修改 `main` 分支。
+* 分支命名建议：`feat-功能名` 或 `fix-问题名`。
+
+#### 3. 提交修改 (Commit)
+* **小步提交**：频繁提交小的改动，而不是累积大量改动后一次性提交。
+* **描述清晰**：在 GitHub Desktop 的 Summary 框中简述你的改动原因。
+
+#### 4. 发送 Pull Request (PR)
+* **推送分支**：在 GitHub Desktop 中点击 `Publish branch` 将分支上传到你的 GitHub 账号。
+* **发起 PR**：回到本仓库（原仓库）页面，点击绿色的 `Compare & pull request` 按钮。
+* **检查对比方向**：
+    * **base repository**: `shiqianzheng/Argus-Scanner` (main)
+    * **head repository**: `你的账号/Argus-Scanner` (你的分支)
+
+### 📝 代码要求
+
+* **可运行**：在提交 PR 前，请务必在本地运行扫描器，确保没有语法错误或崩溃。
+* **简洁性**：尽量保持逻辑清晰，复杂的逻辑请添加中文注释。
+* **依赖项**：如果你引入了新的 Python 库，请务必更新 `requirements.txt`。
+
+### 🤝 评审与合并
+
+* **代码评审**：我会尽快查看你的 PR。如果我提出了修改建议，你只需在本地继续修改并 Push，PR 会自动更新。
+* **合并**：一旦审核通过，我会将你的代码通过 `Squash and merge` 方式合并入主分支。
+
+---
+感谢你的贡献！让我们一起把 Argus-Scanner 变得更好！
 
 ### 📚 致谢 (Acknowledgements)
 本项目在开发过程中参考了以下优秀的开源项目，特此感谢：
