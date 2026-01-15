@@ -60,11 +60,13 @@ graph TD
 -   **多语言全覆盖**: 深度支持 Python, Java, Go, C, C++ 等主流编程语言。
 -   **语义级静态分析 (Static Analysis)**:
     -   **污点分析 (Taint)**: 追踪从输入源 (`source`) 到敏感汇聚点 (`sink`) 的全路径，精准识别 SQL 注入、命令执行等漏洞。
-    -   **[新增] 内存安全检测**: 静态识别 Shellcode 特征码、`ctypes` 滥用、`VirtualAlloc` 申请可执行内存等高危行为。
+    -   **[新增] 内存安全检测**: 
+        *   **指针逃逸分析**: 深度追踪 C/C++ 中不安全的指针传递与越界读写风险。
+        *   **香农熵降噪**: 引入信息论算法 (Threshold=4.5)，自动过滤 Base64 图片等高熵值造成的误报。
     -   **控制流 & 数据流**: 分析异常逻辑跳转与变量隐式依赖。
 -   **沙箱化动态监控 (Dynamic Analysis)**:
     -   **Docker 物理隔离**: 所有动态测试均在 Docker 容器内运行，保障宿主机绝对安全。
-    -   **[增强] 行为感知**: 实时捕获文件删除、网络外联 (C2)、以及**高危内存系统调用 (mmap/mprotect with EXEC)**。
+    -   **[增强] 行为感知**: 实时捕获文件删除、网络外联 (C2)、以及**高危内存系统调用 (mmap/mprotect/memfd_create)**，有效防御无文件攻击。
 -   **现代化报表**: 自动生成交互式 HTML 报告，图表化展示漏洞分布，并提供专业的修复建议。
 -   **Web 可视化**: 内置 Web 界面，支持代码片段在线扫描与一键生成报告。
 
@@ -74,7 +76,7 @@ graph TD
 
 ### 前置要求
 -   **Python 3.8+**
--   **Docker 环境** (可选：用于启用沙箱化动态监控功能)
+-   **Docker Desktop** (必须安装并启动，用于启用核心的沙箱动态监控功能)
 -   **Git**
 
 ### 快速安装
@@ -85,6 +87,7 @@ graph TD
     ```
 2.  **安装依赖**
     ```bash
+    # 包含 docker python 库
     pip install -r requirements.txt
     ```
 3.  **环境检查**
@@ -172,8 +175,14 @@ v1.1.0 支持自定义动态监控规则。例如，您可以定义什么行为�
 # 内存活动规则示例
 - id: MEM-001
   title: "可执行内存分配 (mmap)"
-  pattern: 'mmap\(.*PROT_EXEC.*'
+  pattern: 'mprotect.*PROT_EXEC.*'
   severity: HIGH
+  category: memory
+
+- id: MEM-C-FILELESS-INTENT
+  title: "无文件执行意图 (memfd_create)"
+  pattern: 'memfd_create'
+  severity: CRITICAL
   category: memory
 ```
 
