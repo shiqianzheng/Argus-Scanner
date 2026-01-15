@@ -82,17 +82,7 @@ class SyscallMonitor:
             }
 
         # 优先使用 Docker Sandbox
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        sandbox_enabled = self.config.get('dynamic_analysis.sandbox_enabled', True) or \
-                         self.config.get('dynamic_analysis.sandbox.enabled', True)
-        if sandbox_enabled and self.sandbox.is_available():
-=======
         if self.config.get('dynamic_analysis.sandbox.enabled', True):
->>>>>>> Stashed changes
-=======
-        if self.config.get('dynamic_analysis.sandbox.enabled', True):
->>>>>>> Stashed changes
             self.logger.info(f"使用 Docker Sandbox 执行: {executable['cmd']}")
             return self._monitor_with_sandbox(target, executable, files)
         
@@ -110,92 +100,28 @@ class SyscallMonitor:
     def _monitor_with_sandbox(self, target: str, executable: Dict, files: List[str]) -> Dict[str, Any]:
         """使用 Sandbox 执行并分析"""
         
-<<<<<<< Updated upstream
-        # 0. 可选：安装依赖（如果配置启用且项目需要）
-        language = executable.get('type', 'python')
-        project_path = executable.get('path')
-        
-        # 确定项目根目录（用于依赖安装）
-        if project_path:
-            project_root = project_path if os.path.isdir(project_path) else os.path.dirname(project_path)
-        else:
-            project_root = None
-        
-        # 检查是否需要安装依赖
-        auto_install = self.config.get('dynamic_analysis.auto_install_dependencies', False)
-        if auto_install and project_root and language in ['python', 'java', 'go']:
-            self.logger.info(f"尝试自动安装 {language} 项目依赖...")
-            install_result = self.sandbox.install_dependencies(project_root, language)
-            if install_result.get('status') == 'success':
-                self.logger.info(f"依赖安装成功 (耗时 {install_result.get('duration', 0):.2f}s)")
-            elif install_result.get('status') == 'failed':
-                self.logger.warning(f"依赖安装失败，将继续执行: {install_result.get('logs', '')[:200]}")
-            # skipped 或 error 时继续执行，不中断
-        
-        # 1. 在 Sandbox 中运行（带超时）
-        timeout = self.config.get('dynamic_analysis.timeout', 10)
-        result = self.sandbox.run(executable, files, timeout=timeout)
-=======
         # 1. 在 Sandbox 中运行
         # 使用 shared sandbox manager
         result = self.sandbox.run_analysis_command(target, executable)
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         
         if result.get('error'):
             return {
                 'analyzer': 'SyscallMonitor',
                 'error': result['error'],
-                'findings': [],
-                'executed_command': executable.get('cmd')
+                'findings': []
             }
             
         strace_log = result.get('strace_log', '')
-        strace_log_file = result.get('strace_log_file')
-        timed_out = result.get('timed_out', False)
-        execution_time = result.get('execution_time', 0)
-        
-        # 检查是否超时
-        if timed_out:
-            self.logger.warning(f"执行超时（{timeout}秒），已强制终止")
-            # 即使超时，也尝试分析已有的 strace 日志
-        
-        # 检查 strace 日志是否为空
-        if not strace_log or not strace_log.strip():
-            warning_msg = 'strace log is empty'
-            if timed_out:
-                warning_msg = 'strace log is empty (execution timed out)'
-            self.logger.warning("strace 日志为空，可能是程序执行时间过短或 strace 未正确记录")
-            return {
-                'analyzer': 'SyscallMonitor',
-                'executed_command': executable.get('cmd'),
-                'exit_code': result.get('exit_code'),
-                'findings': [],
-                'log_snippet': [],
-                'strace_log_file': strace_log_file,
-                'timed_out': timed_out,
-                'execution_time': execution_time,
-                'warning': warning_msg
-            }
         
         # 2. 分析 strace 日志
         findings = self._analyze_strace_log(strace_log)
         
-        # 3. 记录日志文件路径
-        if strace_log_file:
-            self.logger.info(f"strace 日志文件: {strace_log_file}")
-        
         return {
             'analyzer': 'SyscallMonitor',
-            'executed_command': executable.get('cmd'),
+            'executed_command': executable['cmd'],
             'exit_code': result.get('exit_code'),
             'findings': findings,
-            'log_snippet': strace_log.split('\n')[:20] if strace_log else [],
-            'strace_log_file': strace_log_file,
-            'timed_out': timed_out,
-            'execution_time': round(execution_time, 2)
+            'log_snippet': strace_log.split('\n')[:20] if strace_log else []
         }
 
     def _analyze_strace_log(self, log_content: str) -> List[Dict]:
@@ -274,15 +200,6 @@ class SyscallMonitor:
                  # Java 若无明确类名较难处理，此处做简单假设
                  return {'type': 'java', 'path': target, 'cmd': f'javac {Path(target).name} && java {Path(target).stem}'}
         
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        # 目录扫描 - 使用项目根目录（target）作为 path，而不是单个文件
-        target_path = Path(target)
-        project_root = str(target_path) if target_path.is_dir() else str(target_path.parent)
-        
-=======
-=======
->>>>>>> Stashed changes
         # 1. 优先检测 Spring Boot 多模块项目入口
         spring_boot_entry = self._find_spring_boot_entry(target, files)
         if spring_boot_entry:
@@ -294,29 +211,18 @@ class SyscallMonitor:
             return django_entry
 
         # 3. 目录扫描 (现有逻辑)
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         for f in files:
             p = Path(f)
             if p.name == 'main.py':
-                return {'type': 'python', 'path': project_root, 'cmd': 'python main.py'}
+                return {'type': 'python', 'path': f, 'cmd': 'python main.py'}
             if p.name == 'app.py':
-                return {'type': 'python', 'path': project_root, 'cmd': 'python app.py'}
+                return {'type': 'python', 'path': f, 'cmd': 'python app.py'}
             if p.name == 'go.mod':
-                return {'type': 'go', 'path': project_root, 'cmd': 'go run .'}
+                return {'type': 'go', 'path': f, 'cmd': 'go run .'}
             if p.name == 'pom.xml':
                 self.logger.info("检测到 Maven 项目，推荐使用: mvn spring-boot:run")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                return {'type': 'java', 'path': project_root, 'cmd': 'mvn spring-boot:run'}
-=======
-=======
->>>>>>> Stashed changes
                 # 如果是单体项目，根目录运行即可；如果是多模块且未找到Spring Boot入口，这也是一种兜底
                 return {'type': 'java', 'path': f, 'cmd': 'mvn spring-boot:run'}
->>>>>>> Stashed changes
                 
         return None
 
