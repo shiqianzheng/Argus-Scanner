@@ -27,6 +27,13 @@ def print_banner():
 
 def main():
     """主函数"""
+    # Windows 下保持默认编码 (GBK) 以匹配 cmd/powershell，但忽略不支持的字符 (如 emoji) 以防报错
+    # if sys.platform == 'win32':
+    #     import io
+    #     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=sys.stdout.encoding, errors='replace')
+    #     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding=sys.stderr.encoding, errors='replace')
+
+    
     print_banner()
     
     parser = argparse.ArgumentParser(
@@ -102,6 +109,24 @@ def main():
         help='动态分析时手动指定运行命令（例如: "python main.py" 或 "java -jar target/app.jar"）'
     )
     
+    # 沙箱控制参数
+    parser.add_argument(
+        '--docker-image',
+        help='指定用于沙箱分析的Docker镜像（覆盖默认语言镜像）'
+    )
+    
+    parser.add_argument(
+        '--manual-setup',
+        action='store_true',
+        help='沙箱环境手动配置模式（跳过自动依赖安装）'
+    )
+    
+    parser.add_argument(
+        '--clean',
+        action='store_true',
+        help='清理项目的沙箱容器'
+    )
+    
     args = parser.parse_args()
     
     # 设置日志
@@ -141,7 +166,10 @@ def main():
         'static': not args.dynamic_only,
         'dynamic': not args.static_only,
         'language': args.language,
-        'exec_cmd': args.exec_cmd
+        'exec_cmd': args.exec_cmd,
+        'sandbox_image': args.docker_image,
+        'manual_setup': args.manual_setup,
+        'cleanup_container': args.clean
     }
     
     results = scanner.scan(str(target_path), **scan_options)

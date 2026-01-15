@@ -10,9 +10,11 @@ rules:
     languages: [python, java, go, c, cpp]
     patterns:
       - type: call
-        regex: "connect|socket"
+        # 排除 Django signals, Celery tasks, SQLite DB 等常见 connect/delay 调用
+        regex: "(?<!post_save\\.)(?<!post_delete\\.)(?<!signal\\.)(?<!task\\.)(?<!sqlite3\\.)(?<!db\\.)\\bconnect\\("
       - type: string
-        regex: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"
+        # 排除 localhost 和 0.0.0.0，且要求前后有边界防止匹配版本号
+        regex: "(?<!127\\.0\\.0\\.1)(?<!0\\.0\\.0\\.0)\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b"
 
   - id: BACKDOOR-002
     title: "反弹 Shell (子进程)"
@@ -22,7 +24,7 @@ rules:
     languages: [python, java, go, c, cpp]
     patterns:
       - type: string
-        regex: "nc -e|bash -i >&|/dev/tcp/"
+        regex: "\\bnc\\s+-e|bash\\s+-i\\s+>&|/dev/tcp/"
 
   - id: BACKDOOR-003
     title: "Base64 编码代码执行"
@@ -32,9 +34,9 @@ rules:
     languages: [python]
     patterns:
       - type: call
-        regex: "exec|eval"
+        regex: "\\b(?:exec|eval)\\b"
       - type: call
-        regex: "b64decode"
+        regex: "\\b(?:b64decode|base64\\.b64decode)\\b"
 
   # ============================================================================
   # 凭据与隐私信息 (Secrets & Credentials)
@@ -80,4 +82,4 @@ rules:
     languages: [all]
     patterns:
       - type: string
-        regex: "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b"
+        regex: "(?<!127\\.0\\.0\\.1)(?<!0\\.0\\.0\\.0)\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b"

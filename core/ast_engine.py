@@ -40,16 +40,29 @@ class ASTEngine:
             
             # 创建 Parser (处理版本兼容性问题)
             parser = None
+            init_errors = []
+            
+            # 尝试 1: 传统方式 Parser() + set_language()
             try:
-                # 尝试传统方式: Parser() + set_language()
                 parser = Parser()
-                parser.set_language(language)
-            except Exception:
+                # 检查是否有 set_language 方法
+                if hasattr(parser, 'set_language'):
+                    parser.set_language(language)
+                # 检查是否有 language 属性 (新版)
+                elif hasattr(parser, 'language'):
+                     # 部分版本允许直接赋值
+                     parser.language = language
+                else:
+                    raise AttributeError("Parser object has neither 'set_language' method nor 'language' property")
+            except Exception as e1:
+                init_errors.append(f"Attempt 1 (standard) failed: {e1}")
+                # 尝试 2: 构造函数传参 Parser(language)
                 try:
-                    # 尝试新版本方式: Parser(language)
                     parser = Parser(language)
                 except Exception as e2:
-                    self.logger.error(f"Failed to initialize parser for {lang_name} after multiple attempts: {e2}")
+                    init_errors.append(f"Attempt 2 (constructor) failed: {e2}")
+                    
+                    self.logger.error(f"Failed to initialize parser for {lang_name}. Details: {'; '.join(init_errors)}")
                     return None
             
             self.parsers[lang_name] = parser

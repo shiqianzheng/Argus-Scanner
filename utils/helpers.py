@@ -12,6 +12,7 @@ LANGUAGE_EXTENSIONS = {
     'python': ['.py', '.pyw'],
     'java': ['.java'],
     'go': ['.go'],
+    'javascript': ['.js', '.mjs', '.cjs', '.ts', '.jsx', '.tsx'],
     'c': ['.c', '.h'],
     'cpp': ['.cpp', '.cc', '.cxx', '.hpp', '.hh', '.hxx', '.c++', '.h++']
 }

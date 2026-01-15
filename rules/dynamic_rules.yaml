@@ -4,11 +4,12 @@ rules:
   # ============================================================================
   - id: NETWORK-001
     title: "外发现网络连接"
-    pattern: 'connect\(.*sin_addr=inet_addr\("(?P<ip>[^"]+)"\)'
-    description: "程序发起了一个指向外部 IP 的网络连接，可能涉及外联 C2 服务器或数据外泄。"
+    # 使用负向预查排除内网 IP (127.x, 10.x, 192.168.x, 172.16-31.x)
+    pattern: 'connect\(.*sin_addr=inet_addr\("(?P<ip>(?!127\.|10\.|192\.168\.|172\.(?:1[6-9]|2[0-9]|3[01])\.)[^"]+)"\)'
+    description: "程序发起了一个指向外部互联网 IP 的网络连接，可能涉及外联 C2 服务器或数据外泄。"
     severity: MEDIUM
     category: network
-    exclude_ips: ["127.0.0.1", "0.0.0.0", "::1"]
+    exclude_ips: ["0.0.0.0", "::1"]
 
   - id: NETWORK-002
     title: "可疑端口绑定"
@@ -23,8 +24,9 @@ rules:
   # ============================================================================
   - id: FS-001
     title: "敏感文件访问"
-    pattern: 'openat\(.*"(?P<file>/etc/(shadow|passwd|hosts|resolv.conf))"'
-    description: "程序访问了关键的系统配置文件（如 /etc/passwd 或 /etc/shadow），涉及提权或信息收集。"
+    # 移除 harmless 的 hosts/resolv.conf 读取
+    pattern: 'openat\(.*"(?P<file>/etc/(shadow|passwd))"'
+    description: "程序访问了关键的系统认证文件（如 /etc/passwd 或 /etc/shadow），涉及提权或信息收集。"
     severity: HIGH
     category: filesystem
 

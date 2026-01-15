@@ -20,7 +20,8 @@ class Sandbox:
         self.dockerfile_path = os.path.join(os.path.dirname(__file__), "Dockerfile")
         # Initialize Docker client
         try:
-            self.client = docker.from_env()
+            # 设置超时时间，避免在 Docker 未响应时无限等待
+            self.client = docker.from_env(timeout=5)
             self.client.ping()
         except Exception as e:
             self.logger.warning(f"Failed to connect to Docker daemon: {e}")
@@ -74,12 +75,19 @@ class Sandbox:
             container = None
 
         if container is None:
+            # 自动探测并挂载本地 Maven 仓库以加速并解决多模块依赖
+            volumes = {mount_dir: {'bind': '/app', 'mode': 'rw'}}
+            m2_path = os.path.expanduser("~/.m2/repository")
+            if os.path.exists(m2_path):
+                volumes[m2_path] = {'bind': '/root/.m2/repository', 'mode': 'rw'}
+                self.logger.info(f"检测到本地 Maven 仓库，已同步挂载: {m2_path}")
+
             container = self.client.containers.run(
                 target_image,
                 command=["tail", "-f", "/dev/null"],
                 name=self.container_name,
                 detach=True,
-                volumes={mount_dir: {'bind': '/app', 'mode': 'rw'}},
+                volumes=volumes,
                 working_dir='/app',
                 cap_add=['SYS_PTRACE'],
                 security_opt=['seccomp:unconfined']

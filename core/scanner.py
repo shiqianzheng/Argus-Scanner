@@ -12,6 +12,7 @@ from datetime import datetime
 from utils.helpers import get_files_by_language, detect_language, read_file_content
 from utils.logger import get_logger
 from .config import Config
+from .sandbox import SandboxManager
 
 
 class CodeScanner:
@@ -22,6 +23,7 @@ class CodeScanner:
         self.logger = get_logger()
         self._static_analyzers = {}
         self._dynamic_analyzers = {}
+        self.sandbox = SandboxManager(config)
         self._init_analyzers()
     
     def _init_analyzers(self):
@@ -63,7 +65,7 @@ class CodeScanner:
         
         # 动态分析器
         if self.config.get('dynamic_analysis.syscall_monitor.enabled', True):
-            self._dynamic_analyzers['syscall'] = SyscallMonitor(self.config)
+            self._dynamic_analyzers['syscall'] = SyscallMonitor(self.config, self.sandbox)
         
         if self.config.get('dynamic_analysis.network_monitor.enabled', True):
             self._dynamic_analyzers['network'] = NetworkMonitor(self.config)
@@ -117,6 +119,62 @@ class CodeScanner:
         
         # 动态分析
         if dynamic and self.config.dynamic_analysis_enabled:
+            # 沙箱环境准备 (New)
+            if self.config.get('dynamic_analysis.sandbox.enabled', True) and self.sandbox.is_available():
+                
+                # 检查是否存在清理请求
+                if kwargs.get('cleanup_container'):
+                    self.logger.info("执行沙箱清理操作...")
+                    self.sandbox.cleanup_sandbox(target)
+                    self.logger.info("沙箱清理完成")
+                    return results
+
+                self.logger.info("正在初始化 Docker 沙箱环境...")
+                
+                # 优先使用指定的 Docker 镜像
+                sandbox_image = kwargs.get('sandbox_image')
+                manual_setup = kwargs.get('manual_setup', False)
+                
+                # 优化语言探测逻辑：从列表中寻找第一个可识别的编程语言文件
+                scan_lang = None
+                if language != 'auto':
+                    scan_lang = language
+                else:
+                    for f in files:
+                        detected = detect_language(f)
+                        if detected:
+                            scan_lang = detected
+                            break
+                
+                if not scan_lang and not sandbox_image: # 如果指定了镜像，可以不需要语言
+                    self.logger.warning("无法自动识别项目语言，将跳过沙箱依赖安装")
+                else:
+                    # 尝试拉取镜像
+                    if self.sandbox.prepare_image(scan_lang, image_override=sandbox_image):
+                         # 安装依赖
+                         if manual_setup:
+                             self.logger.info("进入手动配置模式...")
+                         else:
+                             display_name = sandbox_image or scan_lang
+                             self.logger.info(f"在沙箱中安装项目依赖 ({display_name})...")
+                         
+                         install_res = self.sandbox.run_dependency_install(
+                             target, 
+                             scan_lang, 
+                             image_override=sandbox_image, 
+                             manual_setup=manual_setup
+                         )
+                         
+                         if install_res['status'] == 'success':
+                             self.logger.info("依赖安装环境就绪，准备进行动态分析")
+                         elif install_res['status'] == 'manual_setup_waiting':
+                             # 手动模式，用户已配置完成
+                             self.logger.info("手动配置完成，继续分析")
+                         elif install_res['status'] == 'skipped':
+                             self.logger.info("跳过依赖安装 (未找到配置文件)")
+                         else:
+                             self.logger.warning(f"依赖安装失败: {install_res.get('logs')}")
+            
             self.logger.info("开始动态分析...")
             exec_cmd = kwargs.get('exec_cmd')
             dynamic_results = self._run_dynamic_analysis(target, files, exec_cmd=exec_cmd)
