@@ -29,7 +29,7 @@ class Config:
         },
         'dynamic_analysis': {
             'enabled': True,
-            'timeout': 60
+            'timeout': 10
         }
     }
     

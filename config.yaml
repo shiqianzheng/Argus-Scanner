@@ -58,7 +58,7 @@ static_analysis:
 dynamic_analysis:
   enabled: true
   sandbox_enabled: true
-  timeout: 60  # 秒
+  timeout: 10  # 秒
   # 系统调用监控
   syscall_monitor:
     enabled: true
