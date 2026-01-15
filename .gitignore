@@ -8,34 +8,40 @@ env/
 venv/
 .venv/
 pip-log.txt
-pip-delete-this-directory.txt
 
 # IDEs
 .vscode/
 .idea/
 *.swp
 
-# Project Specific
+# Project Specific - Reports & Logs
 reports/
 reports_*/
 report_*/
 logs/
 *.log
-docs/html_reports/
+*.html
+*.json
+*.txt
 
-# Test Artifacts & Large Datasets
-Ruoyi-master/
+# Sandbox & Tests & Debug Scripts
+tests/
+test_targets/
+test_data/
 test_references/
+Ruoyi-master/
 temp_debug.java
 
-# Development Utility Scripts
-# 仅保留演示指导书中必需的环境自检脚本，其余调试/测试脚本不予追踪
 debug_*.py
 check_*.py
-!check_env.py
 analyze_*.py
 clean_report.py
 json_to_html.py
 malicious_test.py
-run_perf_tests.py
-test_cases/
+
+# Documentation
+docs/
+
+# System Files
+.DS_Store
+Thumbs.db
