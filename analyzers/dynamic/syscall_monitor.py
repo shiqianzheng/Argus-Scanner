@@ -83,9 +83,13 @@ class SyscallMonitor:
 
         # 优先使用 Docker Sandbox
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         sandbox_enabled = self.config.get('dynamic_analysis.sandbox_enabled', True) or \
                          self.config.get('dynamic_analysis.sandbox.enabled', True)
         if sandbox_enabled and self.sandbox.is_available():
+=======
+        if self.config.get('dynamic_analysis.sandbox.enabled', True):
+>>>>>>> Stashed changes
 =======
         if self.config.get('dynamic_analysis.sandbox.enabled', True):
 >>>>>>> Stashed changes
@@ -135,6 +139,9 @@ class SyscallMonitor:
         # 1. 在 Sandbox 中运行
         # 使用 shared sandbox manager
         result = self.sandbox.run_analysis_command(target, executable)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         
         if result.get('error'):
@@ -268,11 +275,14 @@ class SyscallMonitor:
                  return {'type': 'java', 'path': target, 'cmd': f'javac {Path(target).name} && java {Path(target).stem}'}
         
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # 目录扫描 - 使用项目根目录（target）作为 path，而不是单个文件
         target_path = Path(target)
         project_root = str(target_path) if target_path.is_dir() else str(target_path.parent)
         
 =======
+=======
+>>>>>>> Stashed changes
         # 1. 优先检测 Spring Boot 多模块项目入口
         spring_boot_entry = self._find_spring_boot_entry(target, files)
         if spring_boot_entry:
@@ -284,6 +294,9 @@ class SyscallMonitor:
             return django_entry
 
         # 3. 目录扫描 (现有逻辑)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         for f in files:
             p = Path(f)
@@ -296,8 +309,11 @@ class SyscallMonitor:
             if p.name == 'pom.xml':
                 self.logger.info("检测到 Maven 项目，推荐使用: mvn spring-boot:run")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 return {'type': 'java', 'path': project_root, 'cmd': 'mvn spring-boot:run'}
 =======
+=======
+>>>>>>> Stashed changes
                 # 如果是单体项目，根目录运行即可；如果是多模块且未找到Spring Boot入口，这也是一种兜底
                 return {'type': 'java', 'path': f, 'cmd': 'mvn spring-boot:run'}
 >>>>>>> Stashed changes
