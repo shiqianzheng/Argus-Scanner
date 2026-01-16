@@ -1,6 +1,6 @@
 # 🛡️ Argus-Scanner - 代码哨兵
 
-> 🎓 **BUPT SCSS 《网络安全课程设计》优秀作品**
+> 🎓 **BUPT SCSS 《网络安全课程设计》作品**
 
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux-lightgrey.svg)](https://github.com/shiqianzheng/Argus-Scanner)
