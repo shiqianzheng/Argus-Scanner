@@ -230,8 +230,8 @@ class SandboxManager:
         
         if language == 'python':
             # 优先安装系统依赖 (针对 mysqlclient, python-ldap 等需要编译的库)
-            # 注意: 这里假设基础镜像是 Debian/Ubuntu based (如 slim)
-            pre_install = "apt-get update && apt-get install -y pkg-config build-essential default-libmysqlclient-dev libldap2-dev libsasl2-dev && "
+            # 添加 strace 以支持动态分析
+            pre_install = "apt-get update && apt-get install -y strace pkg-config build-essential default-libmysqlclient-dev libldap2-dev libsasl2-dev && "
             
             # 优先检查 requirements.txt
             cmd = []
@@ -246,22 +246,28 @@ class SandboxManager:
             
         elif language == 'java':
             # Maven / Gradle
+            # 添加 strace 安装 (Debian based)
+            pre_install = "apt-get update && apt-get install -y strace && "
             cmd = []
+            cmd.append(pre_install)
             cmd.append("if [ -f pom.xml ]; then mvn dependency:resolve -B -DskipTests; ") 
             cmd.append("elif [ -f build.gradle ]; then gradle dependencies; ")
             cmd.append("else echo \"No java dependencies found\"; exit 0; fi")
             return "".join(cmd)
             
         elif language == 'javascript':
-            # npm
+            # npm (Alpine based)
+            # 添加 strace
+            pre_install = "apk add --no-cache strace && "
             cmd = []
+            cmd.append(pre_install)
             cmd.append("if [ -f package.json ]; then npm install; ")
             cmd.append("else echo \"No javascript dependencies found\"; exit 0; fi")
             return "".join(cmd)
             
         elif language == 'go':
-             # go mod
-             return "if [ -f go.mod ]; then go mod download; else echo \"No go dependencies found\"; exit 0; fi"
+             # go mod (Alpine based)
+             return "apk add --no-cache strace && if [ -f go.mod ]; then go mod download; else echo \"No go dependencies found\"; exit 0; fi"
              
         return None
 

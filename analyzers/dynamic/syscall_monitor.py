@@ -102,6 +102,12 @@ class SyscallMonitor:
         
         # 1. 在 Sandbox 中运行
         # 使用 shared sandbox manager
+        # 增加 timeout 防止死循环或服务进程卡死
+        target_cmd = executable['cmd']
+        # 仅对非交互式/非手动模式自动添加 timeout (或者全部添加，这里简单全部添加)
+        # 为 Python SimpleHTTPServer 等服务型程序增加 10s 超时
+        executable['cmd'] = f"timeout -s TERM -k 5 10s {target_cmd}"
+        
         result = self.sandbox.run_analysis_command(target, executable)
         
         if result.get('error'):
